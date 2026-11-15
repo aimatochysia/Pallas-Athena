@@ -1,47 +1,18 @@
 :root {
-  --sand: #dcd9d1;
-  --paper: #e7e3da;
-  --paper-raised: #efebe3;
-  --ink: #2c2824;
-  --ink-soft: #4e4942;
-  --shade: #c8c3b8;
-  --light: #f7f4ee;
   --nav-bar: 92px;
-  --shadow: inset 5px 6px 12px #c4bfb4, inset -4px -4px 10px #f7f4ee;
-  --shadow-hover: inset 7px 8px 16px #b7b2a7, inset -3px -3px 8px #f8f5ef;
-  --inset: inset 3px 3px 7px #c9c4ba, inset -2px -2px 5px #f6f3ec;
-  --inset-deep: inset 4px 5px 10px #bdb8ae, inset -2px -2px 4px #f3efe6;
-  --tool-inset: inset 5px 6px 10px #8a857b, inset -1px -1px 3px #f6f3ec;
-  --tool-inset-deep: inset 6px 7px 13px #6e6a61, inset -1px -1px 2px #f3efe6;
-  --focus: #3e5246;
-  --danger: #7a4e46;
-  --gold: #8a7348;
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
   color-scheme: light;
   font-family: "Outfit", "Avenir Next", "Segoe UI", sans-serif;
   color: var(--ink);
-  background: var(--sand);
+  /* First paint, before src/garden/tokens.js writes the theme. Matches its sand. */
+  background: #dcd9d1;
 }
 
 :root[data-theme="dark"] {
-  --sand: #14161b;
-  --paper: #22262e;
-  --paper-raised: #2a303a;
-  --ink: #e7e2d8;
-  --ink-soft: #b7b1a6;
-  --shade: #05060a;
-  --light: #3a4150;
-  --shadow: inset 5px 6px 14px #05060a, inset -3px -3px 8px #343b4a;
-  --shadow-hover: inset 8px 9px 18px #000000, inset -2px -2px 6px #3d4554;
-  --inset: inset 3px 3px 8px #05060a, inset -2px -2px 5px #323846;
-  --inset-deep: inset 4px 5px 10px #000000, inset -1px -1px 3px #3a4150;
-  --tool-inset: inset 5px 6px 10px #05060a, inset -1px -1px 3px #3a4150;
-  --tool-inset-deep: inset 6px 8px 14px #000000, inset -1px -1px 2px #323846;
-  --focus: #c6a56a;
-  --danger: #e0b2aa;
-  --gold: #c6a56a;
   color-scheme: dark;
+  background: #14161b;
 }
+
+/* Colours and shadows are custom properties written by src/garden/tokens.js. */
 
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; min-height: 100%; background: var(--sand); }
@@ -146,12 +117,23 @@ button { cursor: pointer; }
 .scroller { overflow-x: auto; }
 .garden { position: relative; width: max-content; min-width: 100%; }
 .sand {
-  position: absolute;
+  position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   z-index: 0;
   pointer-events: none;
+}
+.garden-debug {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 10;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  font: 500 0.75rem/1.4 ui-monospace, monospace;
 }
 .board {
   position: relative;

@@ -1,4 +1,8 @@
-const MAX = 24;
+import { GARDEN, themeOf } from "./tokens.js";
+import { packBounds } from "./scene.js";
+
+const MAX = GARDEN.maxShapes;
+const f = (value) => value.toFixed(1);
 
 const VERT = `#version 300 es
 in vec2 a_position;
@@ -6,11 +10,12 @@ void main() { gl_Position = vec4(a_position, 0.0, 1.0); }
 `;
 
 const FRAG = `#version 300 es
+#define MAX ${MAX}
 precision highp float;
 uniform vec2 u_resolution;
 uniform float u_dpr;
 uniform int u_count;
-uniform vec4 u_bounds[24];
+uniform vec4 u_bounds[MAX];
 uniform float u_radius;
 uniform vec3 u_shade;
 uniform vec3 u_highlight;
@@ -28,12 +33,12 @@ float sdRoundBox(vec2 p, vec2 center, vec2 size, float radius) {
 
 float field(vec2 p) {
   float d = 10000.0;
-  for (int i = 0; i < 24; i++) {
+  for (int i = 0; i < MAX; i++) {
     if (i >= u_count) break;
     vec2 center = u_bounds[i].xy;
     vec2 size = u_bounds[i].zw;
     float radius = min(u_radius, min(size.x, size.y) * 0.5);
-    d = smin(d, sdRoundBox(p, center, size, radius), 20.0);
+    d = smin(d, sdRoundBox(p, center, size, radius), ${f(GARDEN.smoothMin)});
   }
   return d;
 }
@@ -41,8 +46,8 @@ float field(vec2 p) {
 float heightAt(vec2 p) {
   float d = field(p);
   if (d <= 0.0) return 0.0;
-  float wave = smoothstep(-0.6, 0.6, sin(d * 6.28318 / 36.0 - 1.5707));
-  float mask = smoothstep(0.0, 12.0, d);
+  float wave = smoothstep(-0.6, 0.6, sin(d * 6.28318 / ${f(GARDEN.period)} - 1.5707));
+  float mask = smoothstep(0.0, ${f(GARDEN.mask)}, d);
   return wave * mask * -1.0;
 }
 
@@ -56,7 +61,7 @@ void main() {
   vec3 lightDir = normalize(vec3(-1.0, -1.0, 1.2));
   float diffuse = max(dot(normal, lightDir), 0.0);
   vec3 color = mix(u_shade, u_highlight, diffuse);
-  float crevice = smoothstep(0.0, 6.0, d);
+  float crevice = smoothstep(0.0, ${f(GARDEN.crevice)}, d);
   color = mix(color * 0.75, color, crevice);
   outColor = vec4(color, 1.0);
 }
@@ -106,36 +111,27 @@ export function createField(canvas) {
   };
   let bufferSize = { w: 0, h: 0 };
 
-  function draw(root, theme) {
-    if (!root) return;
+  /** Draw `shapes` (viewport CSS pixels). The canvas is fixed to the viewport, so its size never follows the board. */
+  function draw(shapes, themeName) {
     const dpr = window.devicePixelRatio || 1;
-    const w = Math.max(1, Math.floor(root.clientWidth * dpr));
-    const h = Math.max(1, Math.floor(root.clientHeight * dpr));
+    const w = Math.max(1, Math.floor(canvas.clientWidth * dpr));
+    const h = Math.max(1, Math.floor(canvas.clientHeight * dpr));
     if (bufferSize.w !== w || bufferSize.h !== h) {
       canvas.width = w;
       canvas.height = h;
       bufferSize = { w, h };
       gl.viewport(0, 0, w, h);
     }
-    const origin = root.getBoundingClientRect();
-    const bounds = new Float32Array(MAX * 4);
-    const nodes = [...root.querySelectorAll("[data-ripple]")].slice(0, MAX);
-    nodes.forEach((node, index) => {
-      const rect = node.getBoundingClientRect();
-      bounds[index * 4] = rect.left - origin.left + rect.width / 2;
-      bounds[index * 4 + 1] = rect.top - origin.top + rect.height / 2;
-      bounds[index * 4 + 2] = rect.width;
-      bounds[index * 4 + 3] = rect.height;
-    });
-    const dark = theme === "dark";
+    const { bounds, count } = packBounds(shapes, MAX);
+    const { shade, highlight } = themeOf(themeName).shader;
     gl.useProgram(program);
     gl.uniform2f(uniforms.resolution, w, h);
     gl.uniform1f(uniforms.dpr, dpr);
-    gl.uniform1i(uniforms.count, nodes.length);
+    gl.uniform1i(uniforms.count, count);
     gl.uniform4fv(uniforms.bounds, bounds);
-    gl.uniform1f(uniforms.radius, 28);
-    gl.uniform3f(uniforms.shade, ...(dark ? [0.07, 0.08, 0.1] : [0.7, 0.68, 0.65]));
-    gl.uniform3f(uniforms.highlight, ...(dark ? [0.2, 0.22, 0.27] : [1, 1, 0.98]));
+    gl.uniform1f(uniforms.radius, GARDEN.radius);
+    gl.uniform3f(uniforms.shade, ...shade);
+    gl.uniform3f(uniforms.highlight, ...highlight);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
