@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test test/board.test.js"
+    "test": "node --test",
+    "shots": "vite build && node scripts/screenshots.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.2",
+    "playwright": "^1.63.0",
     "vite": "^7.1.5",
     "vite-plugin-pwa": "^1.0.3"
   }

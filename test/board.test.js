@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { COLORS, TAG_INK } from "../src/model/colors.js";
+import { THEMES } from "../src/garden/tokens.js";
 import {
   addBlock,
   moveBlock,
@@ -33,8 +34,8 @@ test("tag colors clear 4.5:1 against the ink", () => {
   for (const color of COLORS) {
     assert.ok(contrast(color.hex, TAG_INK) >= 4.5, color.id);
   }
-  assert.ok(contrast("#2c2824", "#dcd9d1") >= 7);
-  assert.ok(contrast("#e7e2d8", "#14161b") >= 7);
+  assert.ok(contrast(THEMES.light.color.ink, THEMES.light.color.sand) >= 7);
+  assert.ok(contrast(THEMES.dark.color.ink, THEMES.dark.color.sand) >= 7);
 });
 
 test("a ticked leaf stays in its column", () => {

@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
 import { BoardProvider, useBoard } from "./context/BoardContext.jsx";
 import { unlock } from "./audio/sound.js";
+import { applyTokens, themeOf } from "./garden/tokens.js";
 import { Header } from "./components/Header.jsx";
 import { BoardView } from "./components/BoardView.jsx";
 import { Sand } from "./components/Sand.jsx";
@@ -55,10 +56,10 @@ function Shell({ theme, onTheme, reduce }) {
 
   return (
     <>
+      <Sand boardRef={boardRef} theme={theme} signature={signature} hold={api.hold} reduce={reduce} />
       <Header theme={theme} onTheme={onTheme} />
       <motion.div className="scroller" layoutScroll>
         <div className="garden">
-          <Sand boardRef={boardRef} theme={theme} signature={signature} hold={api.hold} reduce={reduce} />
           <BoardView boardRef={boardRef} reduce={reduce} />
         </div>
       </motion.div>
@@ -70,11 +71,12 @@ export function App() {
   const [theme, setTheme] = useState(() => (document.documentElement.dataset.theme === "dark" ? "dark" : "light"));
   const reduce = useReduce();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.classList.toggle("reduce", reduce);
+    applyTokens(theme);
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", theme === "dark" ? "#14161b" : "#dcd9d1");
+    if (meta) meta.setAttribute("content", themeOf(theme).chrome);
   }, [theme, reduce]);
 
   useEffect(() => {
